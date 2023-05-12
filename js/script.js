@@ -29,11 +29,11 @@ class Character {
 
 class Vampire extends Character {
     constructor() {
-        super(identity) = {
+        super();
+        this.identity = {
             nature : "",
             conduct : "",
             clan : {
-                name:"",
                 desc: "",
                 weak: "",
                 primal_disc: new Array(3)
@@ -61,11 +61,11 @@ class Vampire extends Character {
         this.merits = [];
         this.flaws = [];
         this.blood = [];
-        super(health) = new Array(2);
+        this.health = new Array(2);
     }
 }
 
 const personajes = new Vampire();
-console.log(personajes.identity.name);
+console.log(personajes);
 
 
