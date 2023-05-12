@@ -1,8 +1,10 @@
+
+
 class Character {
     constructor() {
         this.identity = {
             //empty until PC is created
-            name: "pedro"
+            name: ""
         }
         this.attributes = {
             // strength, dexterity, stamina
@@ -30,16 +32,14 @@ class Character {
 class Vampire extends Character {
     constructor() {
         super();
-        this.identity = {
-            nature : "",
-            conduct : "",
-            clan : {
+        this.identity.nature = "";
+        this.identity.conduct = "";
+        this.identity.clan = {
                 desc: "",
                 weak: "",
                 primal_disc: new Array(3)
-            },
-            gen : 0
-        }
+            };
+        this.identity.gen = 0;
         this.virtues = {
             vir_1: {
                 type: "",
@@ -65,7 +65,51 @@ class Vampire extends Character {
     }
 }
 
-const personajes = new Vampire();
-console.log(personajes);
+initializeSheet = ()=>{
+    let writer = "";    
+}
+
+levelSelect = (name,pos) =>{
+    let elem = document.getElementsByName(name);
+    let valor;
+    if(pos==0){
+        valor = firstPosition(name);
+    }
+    else{
+        if(elem[pos].checked){
+            for(let i=0; i<=pos; i++){
+                elem[i].checked=true;
+            }
+            if(pos < elem.length-1){
+                for(let i=pos+1; i<elem.length; i++){
+                    elem[i].checked=false;
+                }
+            }
+        }
+        else{
+            elem[pos].checked = true;
+            levelSelect(name,pos);
+        }
+        valor = parseInt(elem[pos].value);
+    }
+    console.log(valor);
+}
+
+firstPosition=(name) => {
+    let elem = document.getElementsByName(name);
+    if(elem[0].checked==false&&elem[1].checked){
+        elem[0].checked=true;
+        for(let i=1;i<elem.length;i++){
+            elem[i].checked = false;
+        }
+    }
+    else if(elem[0].checked==false){
+        return 0;
+    }
+    return 1;
+}
+
+
+
 
 

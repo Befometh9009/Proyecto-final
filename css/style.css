@@ -5,3 +5,7 @@
 #mainSheet {
     background: url("../media/hojaVampiro");
 }
+
+.stat{
+    cursor: pointer;
+}
