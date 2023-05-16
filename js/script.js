@@ -1,6 +1,9 @@
-const mainAttr = document.querySelector("#mainAttr")
+const mainAttr = document.querySelector("#mainAttr") //Constructor HTML de 
+const attribute = ["Fuerza","Carisma","Percepción","Destreza","Manipulación","Inteligencia","Resistencia","Apariencia","Astucia"];
 var vamp1;
-
+/**
+ * Estadísticas globales para todos los personajes
+ */
 class Character {
     constructor() {
         this.identity = {
@@ -41,16 +44,12 @@ class Character {
             }
             
         }
-        // for(let i=0;i<attr.length;i++){
-        //     if(this.attributes.attr[i].id==id){
-        //         console.log("aqui");
-        //         obj = Object.getOwnPropertyDescriptor(this.attributes.attr[i]);
-        //     }
-        // }
-        console.log(obj);
     }
 }
 
+/**
+ * Estadísticas de un Vampiro, hereda de Character
+ */
 class Vampire extends Character {
     constructor() {
         super();
@@ -83,21 +82,30 @@ class Vampire extends Character {
         this.merits = [];
         this.flaws = [];
         this.blood = [];
-        this.health = new Array(2);
+        this.health = {
+            lethal: 7,
+            aggravated: 7
+        };
     }
 }
 
-
-initializeSheet = ()=>{
+/**
+ * Constructor de la hoja de personaje en HTML
+ */
+function initializeSheet(){
     let writer = "";
     vamp1=new Vampire();
     writer = createAttributes(vamp1);
     mainAttr.innerHTML = writer;
 }
 
-createAttributes=(char)=>{
-    let writer = "";
-    let attribute = ["Fuerza","Carisma","Percepción","Destreza","Manipulación","Inteligencia","Resistencia","Apariencia","Astucia"];
+/**
+ * Constructor HTML para realizar la construcción de la lista que permite visualizar cada sección
+ * @param {Recibe el objeto Character que en este caso sería el personaje del usuario (con estadísticas incluidas)} char 
+ * @returns entrega el texto ya construido
+ */
+function createAttributes(char){
+    let writer = "";  
     let count = 0;
     let maxAttr = vampGenCalculator(char.identity.gen);
     for(let i=0; i<3; i++){
@@ -129,7 +137,7 @@ createAttributes=(char)=>{
 // 4 - 7 = disminuyen en 1 mientras aumenta la generacion
 // 8 o + = 5
 
-vampGenCalculator=(gen)=>{
+function vampGenCalculator(gen){
     if(gen<4){
         return 10;
     }
@@ -140,8 +148,12 @@ vampGenCalculator=(gen)=>{
         return 5;
     }
 }
-
-levelSelect = (name,pos) =>{
+/**
+ * 
+ * @param {Recibe el input según el nombre de etiqueta, que es común en todos los puntos de cada estadística. Por Ej.: str_dot} name 
+ * @param {Posición del número del checkbox seleccionado en su propia lista} pos 
+ */
+function levelSelect(name,pos){
     let elem = document.getElementsByName(name);
     let value;
     if(pos==0){
@@ -167,9 +179,14 @@ levelSelect = (name,pos) =>{
     console.log(value);
 }
 
-firstPosition=(name) => {
+/**
+ * Listener que escucha la primera posición de cada una de las estadísticas, si su posición siguiente se encuentra activa, vaciará todas las que sigan después de la inicial, si está solo, se desactivará y activará
+ * @param {Nombre de etiquetas en común entre cada estadística} name
+ * 
+ */
+function firstPosition(name){
     let elem = document.getElementsByName(name);
-    if(elem[0].checked==false&&elem[1].checked){
+    if(elem[0].checked==false && elem[1].checked){
         elem[0].checked=true;
         for(let i=1;i<elem.length;i++){
             elem[i].checked = false;
