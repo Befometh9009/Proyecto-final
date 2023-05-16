@@ -1,5 +1,32 @@
-const mainAttr = document.querySelector("#mainAttr") //Constructor HTML de 
-const attribute = ["Fuerza","Carisma","Percepción","Destreza","Manipulación","Inteligencia","Resistencia","Apariencia","Astucia"];
+const mainAttr = document.querySelector("#mainAttr") //Constructor HTML de la sección: Atributos
+const mainHabs = document.querySelector("#mainHabs") //Constructor HTML de la sección: Habilidades
+
+const attributeEsp = ["Fuerza","Carisma","Percepción","Destreza","Manipulación","Inteligencia","Resistencia","Apariencia","Astucia"];
+const vampHabEsp = [
+    "Alerta","Armas C.C.","Academicismo",
+    "Atletismo","Armas de Fuego","Ciencia",
+    "Callejeo","Conducir","Finanzas",
+    "Consciencia","Etiqueta","Informática",
+    "Empatía","Latrocinio","Investigación",
+    "Expresión","Interpretación","Leyes",
+    "Intimidación","Pericias","Medicina",
+    "Liderazgo","Sigilo","Ocultismo",
+    "Pelea","Supervivencia","Política",
+    "Subterfugio","Trato con Animales","Tecnología",
+]
+const attributeEng = ["str","cha","per","dex","man","int","sta","app","wit"];
+const vampHabEng = [
+    "alertness","melee","academics",
+    "atletism","firearms","science",
+    "streetwise","drive","finance",
+    "awareness","etiquette","computer",
+    "empathy","larceny","investigation",
+    "expression","performance","law",
+    "intimidation","crafts","medicine",
+    "leadership","stealth","occult",
+    "brawl","survive","politics",
+    "subterfuge","animalKen","technology",
+]
 var vamp1;
 /**
  * Estadísticas globales para todos los personajes
@@ -35,12 +62,21 @@ class Character {
         this.health = []
     }
     getAttrByID = id => {
-        let obj;
         let attr = Object.getOwnPropertyNames(this.attributes); // crea un array con el nombre de todas las propiedades
         for(let i=0; i<attr.length;i++){
             let elem = Object.getOwnPropertyDescriptor(this.attributes,attr[i]).value; //extrae los valores de cada propiedad para sacar sus correspondientes componentes
             if(elem.id==id){
                 return [attr[i],elem];
+            }
+            
+        }
+    }
+    getHabByID = id => {
+        let hab = Object.getOwnPropertyNames(this.habilities); // crea un array con el nombre de todas las propiedades
+        for(let i=0; i<attr.length;i++){
+            let elem = Object.getOwnPropertyDescriptor(this.habilities,hab[i]).value; //extrae los valores de cada propiedad para sacar sus correspondientes componentes
+            if(elem.id==id){
+                return [hab[i],elem];
             }
             
         }
@@ -60,7 +96,7 @@ class Vampire extends Character {
                 weak: "",
                 primal_disc: new Array(3)
             };
-        this.identity.gen = 14;
+        this.identity.gen = 13;
         this.virtues = {
             vir_1: {
                 type: "",
@@ -93,10 +129,11 @@ class Vampire extends Character {
  * Constructor de la hoja de personaje en HTML
  */
 function initializeSheet(){
-    let writer = "";
     vamp1=new Vampire();
-    writer = createAttributes(vamp1);
+    let writer = createStats(vamp1,1);
     mainAttr.innerHTML = writer;
+    writer = createStats(vamp1,2);
+    mainHabs.innerHTML = writer;
 }
 
 /**
@@ -104,19 +141,37 @@ function initializeSheet(){
  * @param {Recibe el objeto Character que en este caso sería el personaje del usuario (con estadísticas incluidas)} char 
  * @returns entrega el texto ya construido
  */
-function createAttributes(char){
-    let writer = "";  
+function createStats(char,section){
+    let writer = "";    
+    let max = vampGenCalculator(char.identity.gen);
+    writer += listStats(max,section,char);
+    return writer;
+}
+
+function listStats(max,section,char){
+    let writer = "";
     let count = 0;
-    let maxAttr = vampGenCalculator(char.identity.gen);
-    for(let i=0; i<3; i++){
+    let arr;
+    let name;
+    switch(section){
+        case 1:
+            arr = attributeEsp;
+            name = attributeEng
+        break;
+        case 2:
+            arr = vampHabEsp;
+            name = vampHabEng;
+        break;
+        case 3:
+            console.log("ola ke ase") //por modificar
+        break;
+    }
+    for(let i=0; i<arr.length/3; i++){
         writer+='<div class=row justify-content-center align-items-center g-2`>'
         for(let j=0; j<3; j++){
-            writer+=`<div class="col-4">${attribute[count]} <div class="d-inline">(_____)</div>`;
-            let obj = char.getAttrByID(count);
-            let name = obj[0];
-            console.log(name);
-            for(let k = 0;k<=maxAttr;k++){
-                writer+=`<input class="stat" type="checkbox" id="${name}${k+1}" name="${name}_dot" value="1" onchange="levelSelect('${name}_dot',${k})"`
+            writer+=`<div class="col-4">${arr[count]} <div class="d-inline">(_____)</div>`;
+            for(let k = 0;k<max;k++){
+                writer+=`<input class="stat" type="checkbox" id="${name[count]}${k+1}" name="${name[count]}_dot" value="${k+1}" onclick="levelSelect('${name[count]}_dot',${k})"`
                 if(k==0){
                     writer+=`checked>`
                 }else{
@@ -128,7 +183,7 @@ function createAttributes(char){
         }
         writer+=`</div>`
     }
-    return writer;
+    return writer;    
 }
 
 // Generacion:
@@ -161,7 +216,7 @@ function levelSelect(name,pos){
     }
     else{
         if(elem[pos].checked){
-            for(let i=0; i<=pos; i++){
+            for(let i=1; i<=pos; i++){
                 elem[i].checked=true;
             }
             if(pos < elem.length-1){
