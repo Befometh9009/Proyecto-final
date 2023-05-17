@@ -1,7 +1,7 @@
-const mainIdentity = document.querySelector("#mainIdentity"); //constructor HTML de la sección: Identidad
-const mainAttr = document.querySelector("#mainAttr"); //Constructor HTML de la sección: Atributos
-const mainHabs = document.querySelector("#mainHabs"); //Constructor HTML de la sección: Habilidades
-const mainGen = document.querySelector("#gen");
+const mainIdentity = document.querySelector("#mainIdentity"); //Listener HTML de la sección: Identidad
+const mainAttr = document.querySelector("#mainAttr"); //Listener HTML de la sección: Atributos
+const mainHabs = document.querySelector("#mainHabs"); //Listener HTML de la sección: Habilidades
+const mainAdv = document.querySelector("#mainAdv"); // Listener HTML de la sección: Ventajas
 
 //Inicializador de la lista de clanes
 var clanList = [];
@@ -79,7 +79,6 @@ const vampHabEsp = [
   "Tecnología",
 ];
 
-
 //Atributos de vampiro en inglés
 const attributeEng = [
   "str",
@@ -127,6 +126,7 @@ const vampHabEng = [
   "technology",
 ];
 
+// Clase de cada uno de los clanes de Vampiro
 class Clan {
   constructor(nameClan, desc, weak, primal_disc) {
     this.nameClan = nameClan;
@@ -136,10 +136,7 @@ class Clan {
   }
 }
 
-var vamp1;
-/**
- * Estadísticas globales para todos los personajes
- */
+// Clase constructora del personaje base
 class Character {
   constructor() {
     this.identity = {
@@ -198,11 +195,9 @@ class Character {
       }
     }
   };
-}
+};
 
-/**
- * Estadísticas de un Vampiro, hereda de Character
- */
+//clase constructora del personaje vampiro
 class Vampire extends Character {
   constructor() {
     super();
@@ -238,7 +233,9 @@ class Vampire extends Character {
       aggravated: 7,
     };
   }
-}
+};
+
+var vamp1 = new Vampire(); //vampiro de prueba, (prototipo, borrar al terminar)
 
 //Lista de clanes según el libro, el constructor rellena la lista @clanList[]
 function clansBuilder() {
@@ -294,26 +291,27 @@ function clansBuilder() {
     tzimice,
     ventrue,
   ];
-}
+};
 
 /**
  * Constructor principal de la hoja de personaje en HTML
  */
+var isNotCreated = true;
 function initializeSheet() {
-  vamp1 = new Vampire();
-  let writer = createIdentity();
-  mainIdentity.innerHTML = writer;
-  writer = createStats(vamp1, 1);
-  mainAttr.innerHTML = writer;
-  writer = createStats(vamp1, 2);
-  mainHabs.innerHTML = writer;
-}
+  if(isNotCreated){
+    mainIdentity.innerHTML = createIdentity();
+    isNotCreated=false;
+  }
+  mainAttr.innerHTML = createStats(vamp1, 1);
+  mainHabs.innerHTML = createStats(vamp1, 2);
+  mainAdv.innerHTML = createVampAdv(vamp1);
+};
 
 /**
  * Función constructora de la sección: Identidad
  * @returns Sección ya construida
  */
-function createIdentity() {
+function createIdentity(){
   clansBuilder();
   let writer = "";
   count = 0;
@@ -321,10 +319,10 @@ function createIdentity() {
     writer += `<div class="row justify-content-center align-items-center g-2">`;
     for (let j = 0; j < 3; j++) {
       writer += `<div class="col">
-                <label for="${vampIdentityEng[count]}" class="form-label">${vampIdentityEsp[count]}</label>`;
+                <small class="form-text text-muted">${vampIdentityEsp[count]}</small>`;
       switch (count) {
         case 2:
-          writer += `<select class="form-control" id="mainClan"><option value="0">Seleccione...</option>`;
+          writer += `<select class="form-control" id="mainClan"><option value="0">Escoge...</option>`;
           for (let k = 0; k < clanList.length; k++) {
             writer += `<option value="${k + 1}">${
               clanList[k].nameClan
@@ -333,11 +331,11 @@ function createIdentity() {
           writer += `</select>`;
           break;
         case 5:
-          writer += `<input type="number" class="form-control" name="${vampIdentityEng[count]}" id="${vampIdentityEng[count]}" aria-describedby="helpId" onclick="updateGen()" value="13">
+          writer += `<input type="number" class="form-control" name="${vampIdentityEng[count]}" id="${vampIdentityEng[count]}" onclick="updateGen()" value="13">
                     </div>`;
           break;
         default:
-          writer += `<input type="text" class="form-control" name="${vampIdentityEng[count]}" id="${vampIdentityEng[count]}" aria-describedby="helpId">`;
+          writer += `<input type="text" class="form-control" name="${vampIdentityEng[count]}" id="${vampIdentityEng[count]}">`;
           break;
       }
       writer += `</div>`;
@@ -346,7 +344,7 @@ function createIdentity() {
     writer += `</div>`;
   }
   return writer;
-}
+};
 
 /**
  * Actualiza la generación a medida se va cambiando el número que aparece en el clan, en caso de ser inválido, reinicia el contador a "13"
@@ -355,10 +353,7 @@ function updateGen(){
     let generation = gen.value;
     if(generation>0){
         vamp1.identity.gen = generation;
-        writer = createStats(vamp1, 1);
-        mainAttr.innerHTML = writer;
-        writer = createStats(vamp1, 2);
-        mainHabs.innerHTML = writer;
+        initializeSheet()
     }
     else{
         alert("Número de generación no válido")
@@ -366,7 +361,7 @@ function updateGen(){
         updateGen();
     }
 
-}
+};
 
 /**
  * Constructor HTML para realizar la construcción de la lista que permite visualizar cada sección
@@ -379,7 +374,7 @@ function createStats(char, section) {
   //Extrae la generación del vampiro, entre más baja mayor sus capacidades y puede albergar estadísticas más altas
   writer += listStats(max, section);
   return writer;
-}
+};
 
 /**
  * Función constructora de las secciones Atributos y Habilidades
@@ -407,11 +402,13 @@ function listStats(max, section) {
     for (let j = 0; j < 3; j++) {
       writer += `<div class="col-4">${arr[count]}<div class="d-inline">(_____)</div>`;
       for (let k = 0; k < max; k++) {
-        writer += `<input class="stat d-inline" type="checkbox" id="${name[count]}${
-          k + 1
-        }" name="${name[count]}_dot" value="${k + 1}" onclick="levelSelect('${
-          name[count]
-        }_dot',${k})"`;
+        writer += `<input 
+        class="stat d-inline"
+        type="checkbox" 
+        id="${name[count]}${k + 1}" 
+        name="${name[count]}_dot" 
+        value="${k + 1}" 
+        onclick="levelSelect('${name[count]}_dot',${k})"`;
         if (k == 0 && section == 1) {
           writer += `checked>`;
         } else {
@@ -424,9 +421,7 @@ function listStats(max, section) {
     writer += `</div>`;
   }
   return writer;
-}
-
-
+};
 
 /**
  * Función que se encarga de definir el máximo que permite la generación del vampiro para tener en estadísticas, siguiendo la siguiente tabla
@@ -447,7 +442,7 @@ function vampGenCalculator(gen) {
   } else{
     return 5;
   }
-}
+};
 
 /**
  *
@@ -461,7 +456,7 @@ function levelSelect(name, pos) {
     value = firstPosition(name);
   } else {
     if (elem[pos].checked) {
-      for (let i = 1; i <= pos; i++) {
+      for (let i = 0; i <= pos; i++) {
         elem[i].checked = true;
       }
       if (pos < elem.length - 1) {
@@ -476,7 +471,7 @@ function levelSelect(name, pos) {
     value = parseInt(elem[pos].value);
   }
   console.log(value);
-}
+};
 
 /**
  * Listener que escucha la primera posición de cada una de las estadísticas, si su posición siguiente se encuentra activa, vaciará todas las que sigan después de la inicial, si está solo, se desactivará y activará
@@ -494,4 +489,111 @@ function firstPosition(name) {
     return 0;
   }
   return 1;
+};
+
+function createVampAdv(char){
+  //
+  let disc = [];
+  let bg = [];
+  let virt = [];
+  let virtNames = [
+    ["Conciencia","Convicción"],
+    ["Autocontrol","Instinto"],
+    "Coraje"
+  ];
+
+
+
+  let writer =`<textfield class="h2 text-center">Ventajas
+  <div class="row justify-content-center align-items-center g-2">
+  <div class="col">
+  `;
+// Columna izquierda: Disciplinas
+  writer+=`<div class="fs-6 text-center fw-bold mb-3">Disciplinas</div>`;
+  for(let i=0;i<6;i++){
+    disc[i]={
+      namEsp:"",
+      namEng:`discipline_${i+1}`,
+      code:`<input type=text class="fs-6 text-end border-0 bg-light" id="discName${i+1}">`,
+      max: vampGenCalculator(char),
+      withSpec: false,
+      isHorizontal: true
+    };
+    writer+=createOneStat(disc[i]);
+  }
+  writer+=`</div>
+  <div class="col">`;//fin columna izquierda
+
+// Columna central
+  writer+=`<div class="fs-6 text-center fw-bold mb-3">Trasfondos</div>`;
+    for(let i=0;i<6;i++){
+      bg[i]={
+        namEsp:"",
+        namEng:`background_${i+1}`,
+        code:`<input type=text class="fs-6 text-end border-0 bg-light" id="backName${i+1}">`,
+        max: vampGenCalculator(char),
+        withSpec: false,
+        isHorizontal: true,
+      };
+      writer+=createOneStat(bg[i]);
+    }
+
+  writer+=`</div>
+  <div class="col">`;// fin trasfondos
+// Columna derecha
+  writer+=`<div class="fs-6 text-center fw-bold mb-3">Virtudes</div>`;
+  for(let i=0;i<3;i++){
+    let options="";
+    if(virtNames[i].length>1){
+      for(let j=0;j<virtNames[i].length;j++){
+        options += `<select class="fs-6 text-end border-0 bg-light"><option value"${j}">${virtNames[i][j]}</option></select>`
+      }
+    }
+    else{
+      options += `<input type=text class="fs-6 text-end border-0 bg-light">`
+    }
+    virt[i]={      
+      namEsp: "",
+      namEng: `virt_${i+1}`,
+      code: options,
+      max: 5,
+      withSpec: false,
+      isHorizontal: true,
+    }
+  }
+  return writer+`</div></div></textfield>`;
+};
+
+function createOneStat(stat){
+  let inline;
+  if(stat.isHorizontal){
+    inline="col"
+  }
+  else{
+    inline="container-fluid text-center"
+  }
+  let writer=`<div class="row align-items-center">`
+    writer+=`<div class="${inline}">
+    <small id="${stat.namEng}" class="form-text text-muted mx-0">${stat.code}</small>
+    </div>`
+    if(stat.withSpec){
+      writer+=`<div class="${inline}"><input type="text" class="fs-6 border-0 bg-light"></div>`
+    }
+    writer+=`<div class="${inline}">`;
+    for(let i=0;i<stat.max;i++){
+      writer+=`
+      <input
+      class="stat"
+      type="checkbox" 
+      id="${stat.namEng}${i+1}"
+      name="${stat.namEng}_dot"
+      value="${i+1}" 
+      onclick="levelSelect('${stat.namEng}_dot',${i})"`
+      if(i==0 && stat.firstSel){
+        writer+=`checked`;  
+      }
+      writer+=`>`;
+    }
+  writer+=`</div></div>`;
+  return writer;
 }
