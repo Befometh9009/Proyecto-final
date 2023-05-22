@@ -1,7 +1,8 @@
 const mainIdentity = document.querySelector("#mainIdentity"); //Listener HTML de la sección: Identidad
 const mainAttr = document.querySelector("#mainAttr"); //Listener HTML de la sección: Atributos
 const mainHabs = document.querySelector("#mainHabs"); //Listener HTML de la sección: Habilidades
-const mainAdv = document.querySelector("#mainAdv"); // Listener HTML de la sección: Ventajas
+const mainAdv = document.querySelector("#mainAdv"); // Listener HTML de la sección: Ventajas 1
+const mainAdv2 = document.querySelector("#mainAdv2"); // Listener HTML de la sección: Ventajas 2
 
 //Inicializador de la lista de clanes
 var clanList = [];
@@ -195,7 +196,7 @@ class Character {
       }
     }
   };
-};
+}
 
 //clase constructora del personaje vampiro
 class Vampire extends Character {
@@ -233,7 +234,19 @@ class Vampire extends Character {
       aggravated: 7,
     };
   }
-};
+}
+
+class OneStat {
+  constructor(code, firstSel, isHorizontal, namEng, namEsp, max, withSpec) {
+    this.namEng = namEng;
+    this.namEsp = namEsp;
+    this.isHorizontal = isHorizontal;
+    this.firstSel = firstSel;
+    this.code = code;
+    this.max = max;
+    this.withSpec = withSpec;
+  }
+}
 
 var vamp1 = new Vampire(); //vampiro de prueba, (prototipo, borrar al terminar)
 
@@ -291,27 +304,28 @@ function clansBuilder() {
     tzimice,
     ventrue,
   ];
-};
+}
 
 /**
  * Constructor principal de la hoja de personaje en HTML
  */
 var isNotCreated = true; //variable que indica si la página ya fue inicializada por primera vez o no
 function initializeSheet() {
-  if(isNotCreated){
+  if (isNotCreated) {
     mainIdentity.innerHTML = createIdentity();
-    isNotCreated=false;
+    isNotCreated = false;
   }
   mainAttr.innerHTML = createStats(vamp1, 1);
   mainHabs.innerHTML = createStats(vamp1, 2);
   mainAdv.innerHTML = createVampAdv(vamp1);
-};
+  mainAdv2.innerHTML = createVampAdv2(vamp1);
+}
 
 /**
  * Función constructora de la sección: Identidad
  * @returns Sección ya construida
  */
-function createIdentity(){
+function createIdentity() {
   clansBuilder();
   let writer = "";
   count = 0;
@@ -344,24 +358,22 @@ function createIdentity(){
     writer += `</div>`;
   }
   return writer;
-};
+}
 
 /**
  * Actualiza la generación a medida se va cambiando el número que aparece en el clan, en caso de ser inválido, reinicia el contador a "13"
  */
-function updateGen(){
-    let generation = gen.value;
-    if(generation>0){
-        vamp1.identity.gen = generation;
-        initializeSheet()
-    }
-    else{
-        alert("Número de generación no válido")
-        gen.value = 13;
-        updateGen();
-    }
-
-};
+function updateGen() {
+  let generation = gen.value;
+  if (generation > 0) {
+    vamp1.identity.gen = generation;
+    initializeSheet();
+  } else {
+    alert("Número de generación no válido");
+    gen.value = 13;
+    updateGen();
+  }
+}
 
 /**
  * Constructor HTML para realizar la construcción de la lista que permite visualizar cada sección
@@ -374,13 +386,13 @@ function createStats(char, section) {
   //Extrae la generación del vampiro, entre más baja mayor sus capacidades y puede albergar estadísticas más altas
   writer += listStats(max, section);
   return writer;
-};
+}
 
 /**
  * Función constructora de las secciones Atributos y Habilidades
- * @param {el máximo que la generacion permite, definido por Vampire.identity.gen} max 
- * @param {Sección a construir, un número que puede ser 1 o 2} section 
- * @returns 
+ * @param {el máximo que la generacion permite, definido por Vampire.identity.gen} max
+ * @param {Sección a construir, un número que puede ser 1 o 2} section
+ * @returns
  */
 function listStats(max, section) {
   let writer = "";
@@ -421,7 +433,7 @@ function listStats(max, section) {
     writer += `</div>`;
   }
   return writer;
-};
+}
 
 /**
  * Función que se encarga de definir el máximo que permite la generación del vampiro para tener en estadísticas, siguiendo la siguiente tabla
@@ -430,7 +442,7 @@ function listStats(max, section) {
  * 1 - 3 = caín y antediluvianos, stats ilimitados
  * 4 - 7 = disminuyen en 1 mientras aumenta la generacion
  * 8 o + = 5
- * @param {valor de la generación, viene de @Vampire.identity.gen} gen 
+ * @param {valor de la generación, viene de @Vampire.identity.gen} gen
  * @returns el valor máximo de estadística que puede llevar el personaje
  */
 function vampGenCalculator(gen) {
@@ -439,10 +451,10 @@ function vampGenCalculator(gen) {
   } else if (gen < 8) {
     let max = 13 - gen;
     return max;
-  } else{
+  } else {
     return 5;
   }
-};
+}
 
 /**
  *
@@ -471,7 +483,7 @@ function levelSelect(name, pos) {
     value = parseInt(elem[pos].value);
   }
   console.log(value);
-};
+}
 
 /**
  * Listener que escucha la primera posición de cada una de las estadísticas, si su posición siguiente se encuentra activa, vaciará todas las que sigan después de la inicial, si está solo, se desactivará y activará
@@ -489,115 +501,209 @@ function firstPosition(name) {
     return 0;
   }
   return 1;
-};
+}
 
-function createVampAdv(char){
+function createOneStat(stat) {
+  let inline;
+  if (stat.isHorizontal) {
+    inline = "col";
+  } else {
+    inline = "container-fluid text-center";
+  }
+  let writer = `<div class="row align-items-center">`;
+  writer += `<div class="${inline}">
+    <small id="${stat.namEng}" class="form-text text-muted mx-0">${stat.code}</small>
+    </div>`;
+  if (stat.withSpec) {
+    writer += `<div class="${inline}"><input type="text" class="fs-6 border-0 bg-light"></div>`;
+  }
+  writer += `<div class="${inline} align-items-start">`;
+  for (let i = 0; i < stat.max; i++) {
+    writer += `
+      <input
+      class="stat d-inline align-self-start"
+      type="checkbox" 
+      id="${stat.namEng}${i + 1}"
+      name="${stat.namEng}_dot"
+      value="${i + 1}" 
+      onclick="levelSelect('${stat.namEng}_dot',${i})"`;
+    if (i == 0 && stat.firstSel) {
+      writer += `checked`;
+    }
+    writer += `>`;
+  }
+  console.log(stat.max);
+  writer += `</div></div>`;
+  return writer;
+}
+
+/**
+ * Función que se encarga de la tercera parte de la hoja, donde se encuentran las disciplinas, trasfondo y virtudes. (Parte 1)
+ * @param {Personaje, en este caso Vampiro} char
+ * @returns texto ya construido
+ */
+function createVampAdv(char) {
   //
   let disc = [];
   let bg = [];
   let virt = [];
   let virtNames = [
-    ["Conciencia","Convicción"],
-    ["Autocontrol","Instinto"],
-    ["Coraje"]
+    ["Conciencia", "Convicción"],
+    ["Autocontrol", "Instinto"],
+    ["Coraje"],
   ];
 
-  let writer =`<textfield class="h2 text-center">Ventajas
-  <div class="row justify-content-center align-items-center g-2">
-  <div class="col">
-  `;
-// Columna izquierda: Disciplinas
-  writer+=`<div class="fs-6 text-center fw-bold mb-3">Disciplinas</div>`;
-  for(let i=0;i<6;i++){
-    disc.push({
-      namEsp:"",
-      namEng:`discipline`,
-      code:`<input type=text class="fs-6 text-end border-0 bg-light" id="discName${i+1}">`,
-      max: vampGenCalculator(char.identity.gen),
-      withSpec: false,
-      isHorizontal: true
-    });
-    writer+=createOneStat(disc[i]);
+  let writer = `<textfield class="h2 text-center">Ventajas
+    <div class="row justify-content-center align-items-center g-2">
+    <div class="col">
+    `;
+  // Columna izquierda: Disciplinas
+  writer += `<div class="fs-6 text-center fw-bold mb-3">Disciplinas</div>`;
+  for (let i = 0; i < 6; i++) {
+    disc.push(
+      new OneStat(
+        `<input type=text class="fs-6 text-end border-0 bg-light" id="discName${
+          i + 1
+        }">`,
+        false,
+        true,
+        `disc_${i + 1}`,
+        `disc_${i + 1}`,
+        vampGenCalculator(char.identity.gen),
+        false
+      )
+    );
+    writer += createOneStat(disc[i]);
   }
-  writer+=`</div>
-  <div class="col">`;//fin columna izquierda
+  writer += `</div>
+    <div class="col">`; //fin columna izquierda
 
-// Columna central
-  writer+=`<div class="fs-6 text-center fw-bold mb-3">Trasfondos</div>`;
-    for(let i=0;i<6;i++){
-      bg.push({
-        namEsp:"",
-        namEng:`background`,
-        code:`<input type=text class="fs-6 text-end border-0 bg-light" id="backName${i+1}">`,
-        max: vampGenCalculator(char.identity.gen),
-        withSpec: false,
-        isHorizontal: true,
-      });
-      writer+=createOneStat(bg[i]);
-    }
+  // Columna central
+  writer += `<div class="fs-6 text-center fw-bold mb-3">Trasfondos</div>`;
+  for (let i = 0; i < 6; i++) {
+    bg.push(
+      new OneStat(
+        `<input type=text class="fs-6 text-end border-0 bg-light" id="backName${
+          i + 1
+        }">`,
+        false,
+        true,
+        "background",
+        `Trasfondo_${i + 1}`,
+        vampGenCalculator(char.identity.gen),
+        false
+      )
+    );
+    writer += createOneStat(bg[i]);
+  }
 
-  writer+=`</div>
-  <div class="col align-top">`;// fin trasfondos
-// Columna derecha
-  writer+=`<div class="fs-6 text-center fw-bold">Virtudes</div>`;
-  for(let i=0;i<3;i++){
-    let options="";
-    if(virtNames[i].length>1){
-      options +=`<select class="fs-6 border-0 bg-light">`;
-      for(let j=0;j<virtNames[i].length;j++){
-        options += `<option value"${j+1}">${virtNames[i][j]}</option>`;
-      };
-      options+=`</select>`;
-    }
-    else{
+  writer += `</div>
+    <div class="col align-top">`; // fin trasfondos
+  // Columna derecha
+  writer += `<div class="fs-6 text-center fw-bold mb-4">Virtudes</div><div class="py-5">`;
+  for (let i = 0; i < 3; i++) {
+    let options = "";
+    if (virtNames[i].length > 1) {
+      options += `<select class="fs-6 border-0 bg-light">`;
+      for (let j = 0; j < virtNames[i].length; j++) {
+        options += `<option value"${j + 1}">${virtNames[i][j]}</option>`;
+      }
+      options += `</select>`;
+    } else {
       options += `<p class="fs-6 text-dark mt-3">${virtNames[i][0]}</p>`;
     }
-    virt[i]={      
-      namEsp: "",
-      namEng: `virt_${i+1}`,
-      code: options,
-      max: 5,
-      withSpec: false,
-      isHorizontal: true,
-    }
-    writer+=createOneStat(virt[i]);
+    virt[i] = new OneStat(
+      options,
+      false,
+      true,
+      `virt_${i + 1}`,
+      `virt_${i + 1}`,
+      5,
+      false
+    );
+    writer += createOneStat(virt[i]);
   }
-  console.log(`trasfondo=${bg[0].max} ,virtud=${virt[0].max} ,disciplina=${disc[0].max} `)
-  console.log(vampGenCalculator())
-  return writer+`</div></div></textfield>`;
-};
+  console.log(
+    `trasfondo=${bg[0].max} ,virtud=${virt[0].max} ,disciplina=${disc[0].max} `
+  );
+  console.log(vampGenCalculator());
+  return writer + `</div></div></div></textfield>`;
+}
 
-function createOneStat(stat){
-  let inline;
-  if(stat.isHorizontal){
-    inline="col"
+function createVampAdv2() {
+  let will = [];
+  let willWriter = [
+    [`<p class="fs-6 text-center fw-bold mt-4">Fuerza de Voluntad</p>`, "P", "Perm"],
+    ["", "T", "Temporal"],
+  ];
+  let blood;
+  let writer = "";
+  // Columna 1, Méritos y Defectos:
+  writer += `<div class="row justify-content-center align-items-center g-2">
+  <div class="col"><div class="fs-6 text-center fw-bold">Méritos</div>`;
+  for (let i = 0; i < 5; i++) {
+    writer += `<div class="d-block row"><input type=text class="col-8 fs-6 text-end border-0 bg-light" id="merit${
+      i + 1
+    }"><input type=number class="col-3 m-1 fs-6 text-end border-0 bg-light" id="meritCost${
+      i + 1
+    }"></div>`;
   }
-  else{
-    inline="container-fluid text-center"
+  writer += `<div class="fs-6 text-center fw-bold">Defectos</div>`;
+  for (let i = 0; i < 5; i++) {
+    writer += `<div class="d-block row"><input type=text class="col-8 fs-6 text-end border-0 bg-light" id="flaw${
+      i + 1
+    }"><input type=number class="col-3 m-1 fs-6 text-end border-0 bg-light" id="flawCost${
+      i + 1
+    }"></div>`;
   }
-  let writer=`<div class="row align-items-center">`
-    writer+=`<div class="${inline}">
-    <small id="${stat.namEng}" class="form-text text-muted mx-0">${stat.code}</small>
-    </div>`
-    if(stat.withSpec){
-      writer+=`<div class="${inline}"><input type="text" class="fs-6 border-0 bg-light"></div>`
-    }
-    writer+=`<div class="${inline} align-items-start">`;
-    for(let i=0;i<stat.max;i++){
-      writer+=`
-      <input
-      class="stat d-inline align-self-start"
-      type="checkbox" 
-      id="${stat.namEng}${i+1}"
-      name="${stat.namEng}_dot"
-      value="${i+1}" 
-      onclick="levelSelect('${stat.namEng}_dot',${i})"`
-      if(i==0 && stat.firstSel){
-        writer+=`checked`;  
-      }
-      writer+=`>`;
-    }
-    console.log(stat.max)
-  writer+=`</div></div>`;
-  return writer;
+
+  // Columna 2, Senda, Fuerza de voluntad y reserva de sangre
+  //Senda:
+  writer += `</div><div class="col">`;
+  let senda = new OneStat(
+    `<p class="fs-6 text-center fw-bold">Senda</p><input type=text class="col-8 d-block mx-auto fs-6 text-center border-0 bg-light" id="pathName" placeholder="Humanidad"
+    >`,
+    false,
+    false,
+    "path",
+    "Senda",
+    10,
+    false
+  );
+  writer += createOneStat(senda);
+
+  //Fuerza de Voluntad
+  for (let i = 0; i < 2; i++) {
+    will.push(
+      new OneStat(
+        willWriter[i][0],
+        false,
+        false,
+        `will${willWriter[i][1]}`,
+        `fdv${willWriter[i][2]}`,
+        10,
+        false
+      )
+    );
+    writer+= createOneStat(will[i]);
+  }
+
+  //Reserva de Sangre
+
+  blood = new OneStat(
+    `<div class="fs-6 text-center fw-bold mt-4">Reserva de Sangre</div>`,
+    false,
+    false,
+    "blood",
+    "reservaDeSangre",
+    10,
+    false
+  )
+  writer += createOneStat(blood);
+  writer += `<div class="fs-6 text-center fw-bold mt-4">Sangre por Turno<input type=number class="col-1 d-block mx-auto fs-6 text-center d-inline border-1 bg-light"></div>`
+  writer += `</div><div class="col">`;
+  
+  // Columna 3, Puntos de vida, Debilidad y Experiencia
+  
+  return writer + "</div></div>";
 }
