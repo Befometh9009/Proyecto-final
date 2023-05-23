@@ -6,6 +6,8 @@ const mainAdv2 = document.querySelector("#mainAdv2"); // Listener HTML de la sec
 
 //Inicializador de la lista de clanes
 var clanList = [];
+var healthActive;
+var healthState = [0, 0, 0, 0, 0, 0, 0];
 
 //Campos de identidad en español
 const vampIdentityEsp = [
@@ -137,6 +139,14 @@ class Clan {
   }
 }
 
+class HP {
+  constructor(contundent, lethal, aggravated) {
+    this.contundent = contundent;
+    this.lethal = lethal;
+    this.aggravated = aggravated;
+  }
+}
+
 // Clase constructora del personaje base
 class Character {
   constructor() {
@@ -173,7 +183,7 @@ class Character {
       perm: 0,
       temp: 0,
     };
-    this.health = [];
+      this.health = new HP(0, 0, 0);
   }
   getAttrByID = (id) => {
     let attr = Object.getOwnPropertyNames(this.attributes); // crea un array con el nombre de todas las propiedades
@@ -229,10 +239,6 @@ class Vampire extends Character {
     this.merits = [];
     this.flaws = [];
     this.blood = [];
-    this.health = {
-      lethal: 7,
-      aggravated: 7,
-    };
   }
 }
 
@@ -410,9 +416,10 @@ function listStats(max, section) {
       break;
   }
   for (let i = 0; i < arr.length / 3; i++) {
-    writer += "<div class=row justify-content-center align-items-center g-2`>";
+    writer += "<div class='row justify-content-center align-items-center g-2'>";
     for (let j = 0; j < 3; j++) {
-      writer += `<div class="col-4">${arr[count]}<div class="d-inline">(_____)</div>`;
+      //writer += `<div class="col-4">${arr[count]}<div class="d-inline">(_____)</div>`;
+      writer += `<div class="col-4">${arr[count]}<input type="text" class="fs-6 w-25 border-0 bg-light">`;
       for (let k = 0; k < max; k++) {
         writer += `<input 
         class="stat d-inline"
@@ -437,22 +444,75 @@ function listStats(max, section) {
 
 /**
  * Función que se encarga de definir el máximo que permite la generación del vampiro para tener en estadísticas, siguiendo la siguiente tabla
- * Generacion:
- * 0 = humano // no tiene
- * 1 - 3 = caín y antediluvianos, stats ilimitados
- * 4 - 7 = disminuyen en 1 mientras aumenta la generacion
- * 8 o + = 5
+ * ------------------------------------------------------------------------------------------
+ * Generación         |Máximo de rangos   |Reserva Máx. de Sangre   |Puntos de sangre*turno |
+ * ------------------------------------------------------------------------------------------
+ * Tercera o -        |10                 |Ilimitado                |Ilimitado              |
+ * Cuarta             |9                  |50                       |10                     |
+ * Novena             |5                  |14                       |2                      |
+ * Quinta             |8                  |40                       |8                      |
+ * Sexta              |7                  |30                       |6                      |
+ * Séptima            |6                  |20                       |4                      |
+ * Octava             |5                  |15                       |3                      |
+ * Décima             |5                  |13                       |1                      |
+ * Undécima           |5                  |12                       |1                      |
+ * Duodecima          |5                  |10                       |1                      |
+ * Decimotercera o +  |5                  |10 o 0                   |1 o 0                  |
+ * ------------------------------------------------------------------------------------------
  * @param {valor de la generación, viene de @Vampire.identity.gen} gen
+ * @param {Depende del valor que se va a tratar} type
  * @returns el valor máximo de estadística que puede llevar el personaje
  */
-function vampGenCalculator(gen) {
-  if (gen < 4) {
-    return 10;
-  } else if (gen < 8) {
-    let max = 13 - gen;
-    return max;
-  } else {
-    return 5;
+function vampGenCalculator(gen, type) {
+  switch (type) {
+    // CASO 2: Reserva de sangre y gasto de sangre
+    case 2:
+      let blood = new Object();
+      // Para 1ra - 3ra generación
+      if (gen < 4) {
+        blood.total = 0;
+        blood.spend = 99;
+      }
+      // Para 4ta - 7ma generación
+      else if (gen < 8) {
+        blood.total = 90 - 10 * gen;
+        blood.spend = 18 - 2 * gen;
+      }
+      // Para 8va - 12da generación o superior
+      else if (gen < 14) {
+        blood.total = 23 - gen;
+        blood.spend = 11 - gen;
+        if (blood.total < 10) {
+          blood.total = 10;
+        }
+        if (blood.spend < 1) {
+          blood.spend = 1;
+        }
+      }
+      // Para 13ra - 15ta generación
+      else if (gen < 16) {
+        blood.total = 5;
+        blood.spend = 1;
+      }
+      // De 16ta en adelante, no usan puntos de sangre.
+      else {
+        blood.total = 0;
+        blood.spend = 0;
+      }
+      return blood;
+    // CASO 1 y por defecto: Nivel máximo de atributos
+    default:
+      // Para 1ra - 3ra generación:
+      if (gen < 4) {
+        return 10;
+        // Para 4ta - 7ma genración:
+      } else if (gen < 8) {
+        let max = 13 - gen;
+        return max;
+        // Para 8va generación en adelante
+      } else {
+        return 5;
+      }
   }
 }
 
@@ -482,7 +542,6 @@ function levelSelect(name, pos) {
     }
     value = parseInt(elem[pos].value);
   }
-  console.log(value);
 }
 
 /**
@@ -512,7 +571,7 @@ function createOneStat(stat) {
   }
   let writer = `<div class="row align-items-center">`;
   writer += `<div class="${inline}">
-    <small id="${stat.namEng}" class="form-text text-muted mx-0">${stat.code}</small>
+  <small id="${stat.namEng}" class="form-text text-muted mx-0">${stat.code}</small>
     </div>`;
   if (stat.withSpec) {
     writer += `<div class="${inline}"><input type="text" class="fs-6 border-0 bg-light"></div>`;
@@ -532,7 +591,6 @@ function createOneStat(stat) {
     }
     writer += `>`;
   }
-  console.log(stat.max);
   writer += `</div></div>`;
   return writer;
 }
@@ -623,20 +681,22 @@ function createVampAdv(char) {
     );
     writer += createOneStat(virt[i]);
   }
-  console.log(
-    `trasfondo=${bg[0].max} ,virtud=${virt[0].max} ,disciplina=${disc[0].max} `
-  );
-  console.log(vampGenCalculator());
   return writer + `</div></div></div></textfield>`;
 }
 
-function createVampAdv2() {
+function createVampAdv2(char) {
   let will = [];
+  let blood = vampGenCalculator(char.identity.gen, 2);
   let willWriter = [
-    [`<p class="fs-6 text-center fw-bold mt-4">Fuerza de Voluntad</p>`, "P", "Perm"],
+    [
+      `<p class="fs-6 text-center fw-bold mt-4">Fuerza de Voluntad</p>`,
+      "P",
+      "Perm",
+    ],
     ["", "T", "Temporal"],
   ];
-  let blood;
+  healthActive = { contundent: true, lethal: true, aggravated: true };
+  let bloodObject;
   let writer = "";
   // Columna 1, Méritos y Defectos:
   writer += `<div class="row justify-content-center align-items-center g-2">
@@ -685,25 +745,109 @@ function createVampAdv2() {
         false
       )
     );
-    writer+= createOneStat(will[i]);
+    writer += createOneStat(will[i]);
   }
 
   //Reserva de Sangre
 
-  blood = new OneStat(
+  bloodObject = new OneStat(
     `<div class="fs-6 text-center fw-bold mt-4">Reserva de Sangre</div>`,
     false,
     false,
     "blood",
     "reservaDeSangre",
-    10,
+    blood.total,
     false
-  )
-  writer += createOneStat(blood);
-  writer += `<div class="fs-6 text-center fw-bold mt-4">Sangre por Turno<input type=number class="col-1 d-block mx-auto fs-6 text-center d-inline border-1 bg-light"></div>`
+  );
+  writer += createOneStat(bloodObject);
+  writer += `<div class="fs-6 text-center fw-bold mt-4">Sangre por Turno<input type=number class="col-1 d-block w-25 mx-auto fs-6 text-center d-inline border-1 bg-light" disabled value="${blood.spend}"></div>`;
   writer += `</div><div class="col">`;
-  
+
   // Columna 3, Puntos de vida, Debilidad y Experiencia
-  
-  return writer + "</div></div>";
+  writer += `<div class="fs-6 text-center fw-bold">Salud</div><div>`;
+  writer += healthBuilder();
+  writer += `</div>
+  <div class="fs-6 text-center fw-bold">Debilidad</div>
+    <div class="justify-content-center align-items-center">
+      <textarea id="weak" rows=3 cols=40 max=400></textarea>
+    </div>
+  <div class="fs-6 text-center fw-bold">Experiencia</div><div>
+    <textarea id="exp" rows=3 cols=40 max=400></textarea>
+    `;
+  return (
+    writer +
+    `</div></div><hr><div class="text-center">
+  <small class="form-text fw-bold text-danger">Atributos: 7/5/3 • Habilidades: 13/9/5 • Disciplinas: 3 • Trasfondos: 5 • Virtudes: 7 • Puntos Gratuitos: 15 (7/5/2/1)</small>
+</div>`
+  );
+}
+
+function healthBuilder() {
+  let healthLevel = [
+    "Magullado",
+    "Lastimado",
+    "Lesionado",
+    "Herido",
+    "Malherido",
+    "Tullido",
+    "Incapacitado",
+  ];
+  let healthPoint = [0, -1, -1, -2, -2, -5, 0];
+  writer = "";
+  for (let i = 0; i < 7; i++) {
+    writer += `<div class="row justify-content-center align-items-center g-2">
+      <div class="col">
+        <small class="form-text text-muted mx-0">${healthLevel[i]}</small>
+      </div>
+      <div class="col text-center">`;
+    if (healthPoint[i] < 0) {
+      writer += `<small class="form-text text-muted mx-0">${healthPoint[i]}</small>`;
+    } else {
+      writer += `<small class="">   </small>`;
+    }
+    writer += `</div><div class="col justify-content-center align-items-center">`;
+    writer += `<canvas id="HP${
+      i + 1
+    }" class="d-block mx-auto" name="HP_Dot" width=10 height=10 style="border: solid 1px black;" onclick="healthEngine(vamp1,${i})"></canvas>`;
+    writer += `</div></div>`;
+  }
+  return writer;
+}
+
+function healthEngine(char, elem) {
+  let obj = document.querySelector(`#HP${elem + 1}`);
+  let brush = obj.getContext("2d");
+  let type = ["contundent", "lethal", "aggravated"];
+  if (healthState[elem] == 0) {
+    brush.strokeStyle = "black";
+    brush.beginPath();
+    brush.moveTo(10, 0);
+    brush.lineTo(0, 10);
+    brush.stroke();
+    char.health.contundent++;
+    healthState[elem] = 1;
+  } else if (healthState[elem] == 1) {
+    brush.strokeStyle = "black";
+    brush.moveTo(0, 0);
+    brush.lineTo(10, 10);
+    brush.stroke();
+    char.health.contundent--;
+    char.health.lethal++;
+    healthState[elem] = 2;
+  } else if (healthState[elem] == 2) {
+    brush.strokeStyle = "black";
+    brush.moveTo(0, 5);
+    brush.lineTo(10, 5);
+    brush.moveTo(5, 0);
+    brush.lineTo(5, 10);
+    brush.stroke();
+    char.health.lethal--;
+    char.health.aggravated++;
+    healthState[elem] = 3;
+  } else {
+    brush.clearRect(0,0,10,10);
+    char.health.aggravated--;
+    healthState[elem] = 0;
+  }
+  console.log(vamp1.health)
 }
