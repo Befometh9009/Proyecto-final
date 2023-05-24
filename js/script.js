@@ -266,7 +266,7 @@ function clansBuilder() {
     "Ganan partes Animales al perder el control",
     ""
   );
-  let lasombra = new Clan("Lasombra", "", "Recibe más daño del fuego", "");
+  let lasombra = new Clan("Lasombra", "", "Recibe más daño del fuego, no tiene reflejo", "");
   let malkavian = new Clan("Malkavian", "", "Locos al ser abrazados", "");
   let nosferatu = new Clan("Nosferatu", "", "Deformes al ser abrazados", "");
   let ravnos = new Clan("Ravnos", "", "Tienen un vicio incontrolable", "");
@@ -318,7 +318,7 @@ function clansBuilder() {
 var isNotCreated = true; //variable que indica si la página ya fue inicializada por primera vez o no
 function initializeSheet() {
   if (isNotCreated) {
-    mainIdentity.innerHTML = createIdentity();
+    mainIdentity.innerHTML = createVampIdentity();
     isNotCreated = false;
   }
   mainAttr.innerHTML = createStats(vamp1, 1);
@@ -331,7 +331,7 @@ function initializeSheet() {
  * Función constructora de la sección: Identidad
  * @returns Sección ya construida
  */
-function createIdentity() {
+function createVampIdentity() {
   clansBuilder();
   let writer = "";
   count = 0;
@@ -342,7 +342,7 @@ function createIdentity() {
                 <small class="form-text text-muted">${vampIdentityEsp[count]}</small>`;
       switch (count) {
         case 2:
-          writer += `<select class="form-control" id="mainClan"><option value="0">Escoge...</option>`;
+          writer += `<select class="form-control" id="mainClan" onchange="changeClan(vamp1)"><option value="0">Escoge...</option>`;
           for (let k = 0; k < clanList.length; k++) {
             writer += `<option value="${k + 1}">${
               clanList[k].nameClan
@@ -850,4 +850,17 @@ function healthEngine(char, elem) {
     healthState[elem] = 0;
   }
   console.log(vamp1.health)
+}
+
+function changeClan(char){
+  clansBuilder();
+  let text;
+  let clan = parseInt(document.querySelector("#mainClan").value);
+  if(clan == 0){
+    text = "";
+  }else{
+    char.identity.clan = clanList[clan-1];
+    text = char.identity.clan.weak;
+  }
+  document.querySelector("#weak").value = text;
 }
